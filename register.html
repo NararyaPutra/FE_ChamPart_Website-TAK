@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Champart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-image: url(assets/events-1.png);
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+        
+        input, select {
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #003d82;
+            box-shadow: 0 0 0 3px rgba(0, 61, 130, 0.1);
+        }
+
+        /* Add disabled state styling for Program Studi dropdown */
+        select:disabled {
+            background-color: #f3f4f6;
+            color: #d1d5db;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        select:disabled:focus {
+            border-color: #d1d5db;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-md">
+        <!-- Card Container -->
+        <div class="bg-white rounded-lg shadow-2xl p-8">
+            <!-- Header -->
+            <div class="mb-8">
+                <p class="text-blue-600 text-sm font-semibold mb-2">Champart</p>
+                <h1 class="text-4xl font-bold text-black">Welcome!</h1>
+            </div>
+
+            <!-- Form -->
+            <form id="registerForm" class="space-y-4">
+                <!-- Nama Input -->
+                <div>
+                    <input 
+                        type="text"
+                        id="nama"
+                        placeholder="Nama" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg placeholder-gray-500 focus:border-blue-700 transition"
+                        required
+                    >
+                </div>
+
+                <!-- Email Input -->
+                <div>
+                    <input 
+                        type="email"
+                        id="email"
+                        placeholder="Email" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg placeholder-gray-500 focus:border-blue-700 transition"
+                        required
+                    >
+                </div>
+
+                <!-- Nomor HP Input -->
+                <div>
+                    <input 
+                        type="tel"
+                        id="nomor_hp"
+                        placeholder="Nomor HP" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg placeholder-gray-500 focus:border-blue-700 transition"
+                        required
+                    >
+                </div>
+
+                <!-- Password Input -->
+                <div>
+                    <input 
+                        type="password"
+                        id="password"
+                        placeholder="Password" 
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg placeholder-gray-500 focus:border-blue-700 transition"
+                        required
+                    >
+                </div>
+
+                <!-- Fakultas Dropdown -->
+                <div>
+                    <select 
+                        id="fakultas"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-500 focus:border-blue-700 transition appearance-none cursor-pointer bg-white" 
+                        required
+                    >
+                        <option value="">Fakultas</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <!-- Program Studi Dropdown -->
+                <div>
+                    <select 
+                        id="program_studi"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-500 focus:border-blue-700 transition appearance-none cursor-pointer bg-white" 
+                        disabled
+                        required
+                    >
+                        <option value="">Program Studi</option>
+                        <!-- Options will be populated dynamically based on Fakultas selection -->
+                    </select>
+                </div>
+
+                <!-- Continue Button -->
+                <button 
+                    type="submit" 
+                    class="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3 rounded-lg transition duration-300 mt-6"
+                >
+                    Continue
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add JavaScript for dynamic dropdown functionality -->
+    <script>
+        // Data mapping for Fakultas and Program Studi
+        const majorData = {
+            "Fakultas Teknik Elektro (FTE)": [
+                "Teknik Telekomunikasi", 
+                "Teknik Elektro", 
+                "Teknik Biomedis", 
+                "Teknik Komputer", 
+                "Teknik Fisika", 
+                "Teknik Sistem Energi"
+            ],
+            "Fakultas Rekayasa Industri (FRI)": [
+                "Teknik Industri", 
+                "Sistem Informasi", 
+                "Teknik Logistik",
+                "Manajemen Rekayasa Industri"
+            ],
+            "Fakultas Informatika (FIF)": [
+                "Informatika",
+                "Sains Data",
+                "Teknologi Informasi",
+                "Rekayasa Perangkat Lunak"
+            ],
+            "Fakultas Ekonomi dan Bisnis (FEB)": [
+                "Akuntansi",
+                "Manajemen Bisnis Telekomunikasi dan Informatika",
+                "Leisure Management",
+                "Administrasi Bisnis",
+                "Digital Business"
+            ],
+            "Fakultas Komunikasi dan Ilmu Komunikasi (FKS)": [
+                "Ilmu Komunikasi",
+                "Digital Public Relation",
+                "Digital Content Broadcasting",
+                "Psikologi"
+            ], 
+            "Fakultas Industri Kreatif (FIK)": [
+                "Visual Arts",
+                "Desain Komunikasi Visual",
+                "Desain Produk & Inovasi",
+                "Kriya",    
+                "Desain Interior",
+                "Film dan Animasi"
+            ]
+        };
+
+        // Get DOM elements
+        const fakultasSelect = document.getElementById('fakultas');
+        const programStudiSelect = document.getElementById('program_studi');
+        const registerForm = document.getElementById('registerForm');
+
+        // Populate Fakultas dropdown on page load
+        Object.keys(majorData).forEach(fakultas => {
+            const option = document.createElement('option');
+            option.value = fakultas;
+            option.textContent = fakultas;
+            fakultasSelect.appendChild(option);
+        });
+
+        // Handle Fakultas change event
+        fakultasSelect.addEventListener('change', function() {
+            const selectedFakultas = this.value;
+
+            // Reset Program Studi dropdown
+            programStudiSelect.innerHTML = '<option value="">Program Studi</option>';
+
+            if (selectedFakultas) {
+                // Get programs for selected fakultas
+                const programs = majorData[selectedFakultas];
+
+                // Populate Program Studi dropdown with filtered options
+                programs.forEach(program => {
+                    const option = document.createElement('option');
+                    option.value = program;
+                    option.textContent = program;
+                    programStudiSelect.appendChild(option);
+                });
+
+                // Enable Program Studi dropdown
+                programStudiSelect.disabled = false;
+            } else {
+                // Disable Program Studi dropdown if no fakultas selected
+                programStudiSelect.disabled = true;
+            }
+        });
+
+        // Handle form submission
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = {
+                nama: document.getElementById('nama').value,
+                email: document.getElementById('email').value,
+                nomor_hp: document.getElementById('nomor_hp').value,
+                password: document.getElementById('password').value,
+                fakultas: document.getElementById('fakultas').value,
+                program_studi: document.getElementById('program_studi').value
+            };
+
+            console.log('Form Data:', formData);
+            alert('Registrasi berhasil!\n\nData yang dikirim:\n' + JSON.stringify(formData, null, 2));
+        });
+    </script>
+</body>
+</html>
