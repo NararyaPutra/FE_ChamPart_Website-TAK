@@ -1,0 +1,144 @@
+import React, { useState } from "react";
+import Homepage from '../../assets/image/homepage.png'
+import Bootcamp from '../../assets/svg/bootcamp.svg'
+import Seminar from '../../assets/svg/seminar.svg'
+import Webinar from '../../assets/svg/webinar.svg'
+import Lomba from '../../assets/svg/lomba.svg'
+import Dropdown from '../../component/dropdown.jsx'
+import Button from '../../component/button.jsx'
+import Card from '../../component/card.jsx'
+
+
+function Home(){
+  const items = new Array(8).fill(0)
+  const [active, setActive] = useState(null);
+  const handleClick = (value) => {
+    setActive(prev => prev === value ? null : value);
+  };
+  const minatKegiatan = [
+    "Kewirausahaan (Entrepreneurship)",
+    "Teknologi & Pemrograman",
+    "Desain Grafis & UI/UX",
+    "Pemasaran Digital & Media Sosial",
+    "Fotografi & Videografi",
+    "Penulisan Kreatif & Konten",
+    "Riset & Karya Ilmiah",
+    "Kesehatan Mental & Psikologi",
+    "Kegiatan Sosial & Relawan (Volunteering)",
+    "Lingkungan Hidup & Kepecintaalaman",
+    "Musik & Seni Pertunjukan",
+    "Investasi & Literasi Keuangan",
+    "Olahraga (Umum)",
+    "E-sports & Game Development",
+    "Debat & Model United Nations (MUN)",
+    "Pengembangan Diri (Soft Skills)",
+    "Bahasa & Budaya Asing",
+    "Organisasi & Kepemimpinan",
+    "Seni Rupa & Kerajinan",
+    "Kuliner & Tata Boga"
+  ];
+
+  const bakatKegiatan = [
+    "Berbicara di Depan Umum (Public Speaking)",
+    "Analisis & Logika",
+    "Kepemimpinan (Leadership)",
+    "Kreativitas & Menghasilkan Ide",
+    "Kecerdasan Visual & Estetika",
+    "Empati & Keterampilan Interpersonal",
+    "Menulis Persuasif",
+    "Berpikir Kritis & Memecahkan Masalah",
+    "Adaptasi & Cepat Belajar",
+    "Manajemen Waktu & Organisasi",
+    "Kemampuan Musikal (Vokal/Alat Musik)",
+    "Kemampuan Atletik & Kinestetik",
+    "Negosiasi & Diplomasi",
+    "Keterampilan Mengajar & Menjelaskan",
+    "Kejelian Terhadap Detail (Attention to Detail)",
+    "Penguasaan Bahasa Asing",
+    "Seni Peran (Akting)",
+    "Keterampilan Teknikal/Mekanik",
+    "Strategi & Perencanaan",
+    "Keberanian & Pengambilan Risiko"
+  ];
+  return (
+    <div className="space-y-10">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
+        <div className="space-y-6 mr-10">
+          <h1 className="text-3xl md:text-4xl font-bold leading-tight">Temukan berbagai kegiatan bermanfaat untuk keterampilan dan wawasanmu!</h1>
+          <p className="text-gray-600 text-justify">Mulai dari seminar inspiratif, webinar interaktif, bootcamp intensif, hingga berbagai kompetisi menarik—semuanya tersedia untuk membantumu berkembang lebih cepat. Jelajahi event yang sesuai minatmu dan mulai belajar hari ini.</p>
+          <div className="flex gap-4">
+            <button className="px-6 py-2.5 rounded-lg bg-blue-600 text-white shadow-sm hover:bg-blue-700">Lihat</button>
+            <button className="px-6 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-800 hover:bg-gray-200">Cari</button>
+          </div>
+        </div>
+        <div className="w-full">
+          <img className="w-full h-72 md:h-80 object-cover rounded-lg" src={Homepage} alt="Hero"/>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-4 gap-4 text-center">
+      <Button 
+        icon={Seminar} 
+        label="Seminar" 
+        value="Seminar" 
+        active={active}
+        onClick={handleClick}
+      />
+      <Button 
+        icon={Webinar} 
+        label="Webinar" 
+        value="Webinar" 
+        active={active}
+        onClick={handleClick}
+      />
+      <Button 
+        icon={Bootcamp} 
+        label="Bootcamp" 
+        value="Bootcamp" 
+        active={active}
+        onClick={handleClick}
+      />
+      <Button 
+        icon={Lomba} 
+        label="Lomba" 
+        value="Lomba" 
+        active={active}
+        onClick={handleClick}
+      />
+      </section>
+
+     <section className="flex items-center justify-center border-y py-3">
+        <div className="flex items-center gap-16 font-semibold">
+          <Dropdown items={minatKegiatan}>
+            Minat Kegiatan
+          </Dropdown>
+          <Dropdown items={bakatKegiatan}>
+            Bakat Kegiatan
+          </Dropdown>
+        </div>
+      </section>
+
+      <section className="flex gap-3 overflow-x-auto">
+        {["All","Most Popular","New Arrival","This Weekend"].map(t => (
+          <button key={t} className={`px-4 py-2 rounded-lg border shadow-sm whitespace-nowrap ${t==='All' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}>{t}</button>
+        ))}
+      </section>
+
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {items.map((_, i) => (
+          <Card 
+            key={i}
+            gambar="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop"
+            judul="Artificial Intelligence Competition “Implementasi AI dalam Kehidupan Sehari - Hari”"
+            instansi="Universitas Negeri Yogyakarta"
+            tanggal="Sabtu, 31 Oktober 2021"
+            statusTAK="TAK WAJIB"
+            tags={["Teknologi", "ICT", "AI"]}
+            deadline="19/10/2021"
+          />
+        ))}
+      </section>
+    </div>
+  )
+}
+export default Home
