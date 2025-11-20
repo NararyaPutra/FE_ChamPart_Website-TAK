@@ -22,6 +22,17 @@
     <div id="root"></div>
     <script type="text/babel">
       const { useState, useEffect } = React
+      const API_BASE = window.CHAMPART_API_BASE_URL || ''
+      const AUTH_TOKEN = localStorage.getItem('champart_token') || ''
+      async function apiFetch(path, { method = 'GET', headers = {}, body } = {}) {
+        if (!API_BASE) throw new Error('API_BASE tidak dikonfigurasi')
+        const h = { 'Content-Type': 'application/json', ...headers }
+        if (AUTH_TOKEN) h['Authorization'] = `Bearer ${AUTH_TOKEN}`
+        const res = await fetch(`${API_BASE}${path}`, { method, headers: h, body: body ? JSON.stringify(body) : undefined })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const ct = res.headers.get('content-type') || ''
+        return ct.includes('application/json') ? res.json() : res.text()
+      }
 
       function NavButton({ children, title, active, onClick }) {
         return (
@@ -90,12 +101,47 @@
         const [activities, setActivities] = useState(() => { try { const raw = localStorage.getItem('instansi_activities'); return raw ? JSON.parse(raw) : [] } catch { return [] } })
         const [requests, setRequests] = useState(() => { try { const raw = localStorage.getItem('instansi_requests'); return raw ? JSON.parse(raw) : [] } catch { return [] } })
         const [account, setAccount] = useState(() => { try { const raw = localStorage.getItem('instansi_account'); return raw ? JSON.parse(raw) : { name: 'Admin Instansi', email: 'admin@instansi.id', phone: '', avatar: '' } } catch { return { name: 'Admin Instansi', email: 'admin@instansi.id', phone: '', avatar: '' } } })
-        const [institution, setInstitution] = useState(() => { try { const raw = localStorage.getItem('instansi_profile'); return raw ? JSON.parse(raw) : { name: 'Instansi Anda', logo: '' } } catch { return { name: 'Instansi Anda', logo: '' } } })
+        const [institution, setInstitution] = useState(() => { try { const raw = localStorage.getItem('instansi_profile'); return raw ? JSON.parse(raw) : { id: 'I-LOCAL', name: 'Instansi Anda', logo: '' } } catch { return { id: 'I-LOCAL', name: 'Instansi Anda', logo: '' } } })
 
         useEffect(() => { try { localStorage.setItem('instansi_activities', JSON.stringify(activities)) } catch {} }, [activities])
         useEffect(() => { try { localStorage.setItem('instansi_requests', JSON.stringify(requests)) } catch {} }, [requests])
         useEffect(() => { try { localStorage.setItem('instansi_account', JSON.stringify(account)) } catch {} }, [account])
         useEffect(() => { try { localStorage.setItem('instansi_profile', JSON.stringify(institution)) } catch {} }, [institution])
+        useEffect(() => {
+          let cancel = false
+          async function loadInitial() {
+            try {
+              if (API_BASE) {
+                const list = await apiFetch(`/kegiatan?instansi_id=${encodeURIComponent(institution.id)}`)
+                if (!cancel) setActivities(Array.isArray(list) ? list : [])
+              }
+            } catch (e) { if (!cancel) pushToast('Gagal memuat kegiatan dari server', 'error') }
+          }
+          loadInitial()
+          return () => { cancel = true }
+        }, [institution.id])
+
+        useEffect(() => {
+          if (!API_BASE) return
+          const url = `${API_BASE}/events${AUTH_TOKEN ? `?token=${encodeURIComponent(AUTH_TOKEN)}` : ''}`
+          let es
+          try {
+            es = new EventSource(url)
+            es.onmessage = (ev) => {
+              try {
+                const data = JSON.parse(ev.data)
+                if (data.type === 'kegiatan.status_changed') {
+                  setActivities(prev => prev.map(a => a.id === data.id ? { ...a, status: data.status } : a))
+                  pushToast(`Status kegiatan diperbarui: ${data.status}`)
+                }
+              } catch {}
+            }
+          } catch {}
+          let timer = setInterval(async () => {
+            try { const list = await apiFetch(`/kegiatan?instansi_id=${encodeURIComponent(institution.id)}`); setActivities(Array.isArray(list) ? list : []) } catch {}
+          }, 15000)
+          return () => { if (es) es.close(); clearInterval(timer) }
+        }, [institution.id])
 
         function pushToast(message, type = 'info') {
           const id = Math.random().toString(36).slice(2)
@@ -157,9 +203,16 @@
           }, 'Hapus', true)
         }
 
-        function submitActivity(item) {
-          setActivities(prev => prev.map(a => a.id === item.id ? { ...a, status: 'Menunggu' } : a))
-          pushToast('Kegiatan diajukan')
+        async function submitActivity(item) {
+          const prev = activities
+          setActivities(p => p.map(a => a.id === item.id ? { ...a, status: 'Menunggu' } : a))
+          try {
+            if (API_BASE) await apiFetch(`/kegiatan/${encodeURIComponent(item.id)}/submit`, { method: 'POST', body: { instansi_id: institution.id } })
+            pushToast('Kegiatan diajukan')
+          } catch (e) {
+            setActivities(prev)
+            pushToast('Gagal mengajukan kegiatan ke server', 'error')
+          }
         }
 
         function addRequest() {

@@ -222,16 +222,27 @@
       }
 
       function App() {
-        const defaultSettings = {
-          moderation: { requireReasonOnReject: true, requireNoteOnApprove: false, allowBulkApprove: false, bulkLimit: 20, autoApproveLowPriority: false, slaDays: 7, rejectionTemplates: 'Dokumen tidak lengkap, Jadwal tidak sesuai, Informasi kurang jelas' },
-          secret: { defaultExpiryDays: 7, defaultMaxUses: 1, prefix: 'CHP', maskCodes: false, autoRevokeOnInstitutionReject: true },
-          notifications: { email: true, digest: 'weekly', escalateSLA: true },
-          security: { sessionTimeoutMinutes: 30, twoFA: false, impersonation: false },
-          display: { theme: 'light', tableDensity: 'comfortable', defaultTab: 'Dashboard' }
-        }
-        const [settings, setSettings] = useState(() => {
-          try { const raw = localStorage.getItem('champart_admin_settings'); return raw ? JSON.parse(raw) : defaultSettings } catch { return defaultSettings }
-        })
+      const defaultSettings = {
+        moderation: { requireReasonOnReject: true, requireNoteOnApprove: false, allowBulkApprove: false, bulkLimit: 20, autoApproveLowPriority: false, slaDays: 7, rejectionTemplates: 'Dokumen tidak lengkap, Jadwal tidak sesuai, Informasi kurang jelas' },
+        secret: { defaultExpiryDays: 7, defaultMaxUses: 1, prefix: 'CHP', maskCodes: false, autoRevokeOnInstitutionReject: true },
+        notifications: { email: true, digest: 'weekly', escalateSLA: true },
+        security: { sessionTimeoutMinutes: 30, twoFA: false, impersonation: false },
+        display: { theme: 'light', tableDensity: 'comfortable', defaultTab: 'Dashboard' }
+      }
+      const [settings, setSettings] = useState(() => {
+        try { const raw = localStorage.getItem('champart_admin_settings'); return raw ? JSON.parse(raw) : defaultSettings } catch { return defaultSettings }
+      })
+      const API_BASE = window.CHAMPART_API_BASE_URL || ''
+      const AUTH_TOKEN = localStorage.getItem('champart_token') || ''
+      async function apiFetch(path, { method = 'GET', headers = {}, body } = {}) {
+        if (!API_BASE) throw new Error('API_BASE tidak dikonfigurasi')
+        const h = { 'Content-Type': 'application/json', ...headers }
+        if (AUTH_TOKEN) h['Authorization'] = `Bearer ${AUTH_TOKEN}`
+        const res = await fetch(`${API_BASE}${path}`, { method, headers: h, body: body ? JSON.stringify(body) : undefined })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const ct = res.headers.get('content-type') || ''
+        return ct.includes('application/json') ? res.json() : res.text()
+      }
         const tabs = ['Dashboard', 'Kegiatan', 'Instansi', 'Secret Code', 'Audit Log', 'Pengaturan']
         const initialTab = tabs.includes(settings.display?.defaultTab) ? settings.display.defaultTab : tabs[0]
         const [tab, setTab] = useState(initialTab)
@@ -240,26 +251,83 @@
         const [toasts, setToasts] = useState([])
         const [drawer, setDrawer] = useState({ open: false, title: '', content: null })
         const [modal, setModal] = useState({ open: false, title: '', content: null, danger: false, confirmText: 'Konfirmasi', onConfirm: null })
-        const [activities, setActivities] = useState([
-          { id: 'K-001', nama: 'Pelatihan Pemuda', instansi: 'Dinas Pemuda', tanggal: '2025-11-19', pemohon: 'Admin A', status: 'Menunggu', prioritas: 'Sedang', lokasi: 'Aula Kecamatan', deskripsi: 'Pelatihan softskill untuk pemuda' },
-          { id: 'K-002', nama: 'Lomba Kebersihan', instansi: 'Kelurahan Mawar', tanggal: '2025-11-22', pemohon: 'Admin B', status: 'Menunggu', prioritas: 'Tinggi', lokasi: 'RW 02', deskripsi: 'Kegiatan lomba kebersihan lingkungan' }
-        ])
-        const [institutions, setInstitutions] = useState([
-          { id: 'I-101', nama: 'SMK Negeri 1', jenis: 'Pendidikan', tanggalDaftar: '2025-11-10', status: 'Menunggu', dokumen: 'Berkas Registrasi.pdf' },
-          { id: 'I-102', nama: 'Karang Taruna Melati', jenis: 'Komunitas', tanggalDaftar: '2025-11-12', status: 'Menunggu', dokumen: 'Surat Keterangan.pdf' }
-        ])
+        const [activities, setActivities] = useState([])
+        const [institutions, setInstitutions] = useState([])
         const [secretCodes, setSecretCodes] = useState([])
         const [auditLog, setAuditLog] = useState([])
 
         useEffect(() => {
-          const t = setTimeout(() => setLoading(false), 600)
-          return () => clearTimeout(t)
+          let cancelled = false
+          async function loadInitial() {
+            try {
+              setLoading(true)
+              if (API_BASE) {
+                const [acts, insts] = await Promise.all([
+                  apiFetch('/kegiatan?status=Menunggu'),
+                  apiFetch('/instansi?status=Menunggu')
+                ])
+                if (!cancelled) {
+                  setActivities(Array.isArray(acts) ? acts : [])
+                  setInstitutions(Array.isArray(insts) ? insts : [])
+                  setError('')
+                }
+              } else {
+                if (!cancelled) {
+                  setActivities([
+                    { id: 'K-001', nama: 'Pelatihan Pemuda', instansi: 'Dinas Pemuda', tanggal: '2025-11-19', pemohon: 'Admin A', status: 'Menunggu', prioritas: 'Sedang', lokasi: 'Aula Kecamatan', deskripsi: 'Pelatihan softskill untuk pemuda' },
+                    { id: 'K-002', nama: 'Lomba Kebersihan', instansi: 'Kelurahan Mawar', tanggal: '2025-11-22', pemohon: 'Admin B', status: 'Menunggu', prioritas: 'Tinggi', lokasi: 'RW 02', deskripsi: 'Kegiatan lomba kebersihan lingkungan' }
+                  ])
+                  setInstitutions([
+                    { id: 'I-101', nama: 'SMK Negeri 1', jenis: 'Pendidikan', tanggalDaftar: '2025-11-10', status: 'Menunggu', dokumen: 'Berkas Registrasi.pdf' },
+                    { id: 'I-102', nama: 'Karang Taruna Melati', jenis: 'Komunitas', tanggalDaftar: '2025-11-12', status: 'Menunggu', dokumen: 'Surat Keterangan.pdf' }
+                  ])
+                }
+              }
+            } catch (e) {
+              if (!cancelled) setError('Gagal memuat data awal')
+            } finally {
+              if (!cancelled) setLoading(false)
+            }
+          }
+          loadInitial()
+          return () => { cancelled = true }
         }, [])
 
         useEffect(() => {
           const isDark = settings.display?.theme === 'dark'
           document.body.classList.toggle('theme-dark', !!isDark)
         }, [settings.display?.theme])
+
+        useEffect(() => {
+          if (!API_BASE) return
+          const url = `${API_BASE}/events${AUTH_TOKEN ? `?token=${encodeURIComponent(AUTH_TOKEN)}` : ''}`
+          let es
+          try {
+            es = new EventSource(url)
+            es.onmessage = (ev) => {
+              try {
+                const data = JSON.parse(ev.data)
+                if (data.type === 'kegiatan.status_changed') {
+                  setActivities(prev => prev.map(a => a.id === data.id ? { ...a, status: data.status } : a))
+                  addAudit('Update Status Kegiatan', data.id, data.status)
+                } else if (data.type === 'instansi.status_changed') {
+                  setInstitutions(prev => prev.map(i => i.id === data.id ? { ...i, status: data.status } : i))
+                  addAudit('Update Status Instansi', data.id, data.status)
+                }
+              } catch {}
+            }
+          } catch {}
+          // Fallback polling jika SSE gagal
+          let timer = setInterval(async () => {
+            try {
+              const acts = await apiFetch('/kegiatan?status=Menunggu')
+              const insts = await apiFetch('/instansi?status=Menunggu')
+              setActivities(Array.isArray(acts) ? acts : [])
+              setInstitutions(Array.isArray(insts) ? insts : [])
+            } catch {}
+          }, 15000)
+          return () => { if (es) es.close(); clearInterval(timer) }
+        }, [API_BASE])
 
         function pushToast(message, type = 'info') {
           const id = Math.random().toString(36).slice(2)
@@ -288,7 +356,7 @@
           setAuditLog(prev => [{ waktu: time, aksi: action, target, detail: extra || '' }, ...prev])
         }
 
-        function approveActivity(item) {
+        async function approveActivity(item) {
           if (settings.moderation.requireNoteOnApprove) {
             let note = ''
             const Content = () => (
@@ -300,10 +368,17 @@
             openConfirm({
               title: 'Setujui Kegiatan',
               content: <Content />,
-              onConfirm: () => {
-                setActivities(prev => prev.map(a => a.id === item.id ? { ...a, status: 'Disetujui' } : a))
-                addAudit('Setujui Kegiatan', item.id, note)
-                pushToast('Kegiatan disetujui')
+              onConfirm: async () => {
+                const prev = activities
+                setActivities(p => p.map(a => a.id === item.id ? { ...a, status: 'Disetujui' } : a))
+                try {
+                  if (API_BASE) await apiFetch(`/kegiatan/${encodeURIComponent(item.id)}/approve`, { method: 'POST', body: { note } })
+                  addAudit('Setujui Kegiatan', item.id, note)
+                  pushToast('Kegiatan disetujui')
+                } catch (e) {
+                  setActivities(prev)
+                  pushToast('Gagal menyetujui di server', 'error')
+                }
                 closeConfirm()
               }
             })
@@ -311,10 +386,17 @@
             openConfirm({
               title: 'Setujui Kegiatan',
               content: <div>Anda akan menyetujui <b>{item.nama}</b> oleh <b>{item.instansi}</b>.</div>,
-              onConfirm: () => {
-                setActivities(prev => prev.map(a => a.id === item.id ? { ...a, status: 'Disetujui' } : a))
-                addAudit('Setujui Kegiatan', item.id)
-                pushToast('Kegiatan disetujui')
+              onConfirm: async () => {
+                const prev = activities
+                setActivities(p => p.map(a => a.id === item.id ? { ...a, status: 'Disetujui' } : a))
+                try {
+                  if (API_BASE) await apiFetch(`/kegiatan/${encodeURIComponent(item.id)}/approve`, { method: 'POST' })
+                  addAudit('Setujui Kegiatan', item.id)
+                  pushToast('Kegiatan disetujui')
+                } catch (e) {
+                  setActivities(prev)
+                  pushToast('Gagal menyetujui di server', 'error')
+                }
                 closeConfirm()
               }
             })
@@ -334,11 +416,12 @@
             content: <Content />,
             danger: true,
             confirmText: 'Tolak',
-            onConfirm: () => {
+            onConfirm: async () => {
               if (settings.moderation.requireReasonOnReject && !alasan.trim()) { pushToast('Alasan penolakan wajib', 'error'); return }
-              setActivities(prev => prev.map(a => a.id === item.id ? { ...a, status: 'Ditolak' } : a))
-              addAudit('Tolak Kegiatan', item.id, alasan)
-              pushToast('Kegiatan ditolak')
+              const prev = activities
+              setActivities(p => p.map(a => a.id === item.id ? { ...a, status: 'Ditolak' } : a))
+              try { if (API_BASE) await apiFetch(`/kegiatan/${encodeURIComponent(item.id)}/reject`, { method: 'POST', body: { reason: alasan } }); addAudit('Tolak Kegiatan', item.id, alasan); pushToast('Kegiatan ditolak') }
+              catch (e) { setActivities(prev); pushToast('Gagal menolak di server', 'error') }
               closeConfirm()
             }
           })
@@ -348,10 +431,11 @@
           openConfirm({
             title: 'Setujui Instansi',
             content: <div>Anda akan menyetujui instansi <b>{item.nama}</b>.</div>,
-            onConfirm: () => {
-              setInstitutions(prev => prev.map(i => i.id === item.id ? { ...i, status: 'Disetujui' } : i))
-              addAudit('Setujui Instansi', item.id)
-              pushToast('Instansi disetujui')
+            onConfirm: async () => {
+              const prev = institutions
+              setInstitutions(p => p.map(i => i.id === item.id ? { ...i, status: 'Disetujui' } : i))
+              try { if (API_BASE) await apiFetch(`/instansi/${encodeURIComponent(item.id)}/approve`, { method: 'POST' }); addAudit('Setujui Instansi', item.id); pushToast('Instansi disetujui') }
+              catch (e) { setInstitutions(prev); pushToast('Gagal menyetujui instansi di server', 'error') }
               closeConfirm()
             }
           })
@@ -370,14 +454,21 @@
             content: <Content />,
             danger: true,
             confirmText: 'Tolak',
-            onConfirm: () => {
+            onConfirm: async () => {
               if (settings.moderation.requireReasonOnReject && !alasan.trim()) { pushToast('Alasan penolakan wajib', 'error'); return }
-              setInstitutions(prev => prev.map(i => i.id === item.id ? { ...i, status: 'Ditolak' } : i))
-              if (settings.secret.autoRevokeOnInstitutionReject) {
-                setSecretCodes(prev => prev.map(e => e.instansiId === item.id && e.status === 'Aktif' ? { ...e, status: 'Dinonaktifkan' } : e))
+              const prev = institutions
+              setInstitutions(p => p.map(i => i.id === item.id ? { ...i, status: 'Ditolak' } : i))
+              try {
+                if (API_BASE) await apiFetch(`/instansi/${encodeURIComponent(item.id)}/reject`, { method: 'POST', body: { reason: alasan } })
+                if (settings.secret.autoRevokeOnInstitutionReject) {
+                  setSecretCodes(prevCodes => prevCodes.map(e => e.instansiId === item.id && e.status === 'Aktif' ? { ...e, status: 'Dinonaktifkan' } : e))
+                }
+                addAudit('Tolak Instansi', item.id, alasan)
+                pushToast('Instansi ditolak')
+              } catch (e) {
+                setInstitutions(prev)
+                pushToast('Gagal menolak instansi di server', 'error')
               }
-              addAudit('Tolak Instansi', item.id, alasan)
-              pushToast('Instansi ditolak')
               closeConfirm()
             }
           })
