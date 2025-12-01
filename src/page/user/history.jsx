@@ -1,11 +1,14 @@
 import Card from "../../component/card.jsx"
+import { useNavigate } from 'react-router-dom'
+
 
 function History() {
   const items = new Array(4).fill(0)
+  const navigate = useNavigate()
 
   return (
     <div className="">
-      <h1 className="text-2xl font-semibold mb-8">List Deadline</h1>
+      <h1 className="text-2xl font-semibold mb-8">History</h1>
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {items.map((_, i) => (
@@ -18,6 +21,7 @@ function History() {
             statusTAK="TAK WAJIB"
             tags={["Teknologi", "ICT", "AI"]}
             deadline="19/10/2021"
+            onClick={()=>navigate('/kegiatan')}
           />
         ))}
       </section>

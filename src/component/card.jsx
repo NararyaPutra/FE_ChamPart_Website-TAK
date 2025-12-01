@@ -1,6 +1,6 @@
-function Card({gambar, judul, instansi, tanggal, statusTAK, tags = [], deadline}){
+function Card({gambar, judul, instansi, tanggal, statusTAK, tags = [], deadline, onClick}){
     return(
-        <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+        <div onClick={onClick} className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm cursor-pointer transition-shadow duration-200 hover:shadow-md">
             <img className="w-full h-40 object-cover" src={gambar} alt="Event"/>
             <div className="p-4 space-y-2">
               <div className="font-bold">{judul}</div>  

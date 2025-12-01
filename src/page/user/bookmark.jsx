@@ -1,7 +1,9 @@
 import Card from "../../component/card.jsx"
+import { useNavigate } from 'react-router-dom'
 
 function Bookmark() {
   const items = new Array(4).fill(0)
+  const navigate = useNavigate()
 
   return (
     <div className="">
@@ -18,6 +20,7 @@ function Bookmark() {
             statusTAK="TAK WAJIB"
             tags={["Teknologi", "ICT", "AI"]}
             deadline="19/10/2021"
+            onClick={()=>navigate('/kegiatan')}
           />
         ))}
       </section>

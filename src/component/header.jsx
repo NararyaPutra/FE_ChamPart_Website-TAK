@@ -16,11 +16,11 @@ function Header(){
   const navigate = useNavigate();
 
   const handleSubmitSearch = (e) => {
-    if (e.key === "Enter") {   // saat tekan Enter
+    if (e.key === "Enter") {   
       e.preventDefault();
+      navigate(`/search/`)
       const trimmed = query.trim();
-      if (!trimmed) return;  // jangan simpan string kosong
-      // agar tidak ada duplikat
+      if (!trimmed) return;  
       setRecent(prev => {
         const updated = prev.filter(item => item.toLowerCase() !== trimmed.toLowerCase());
         return [trimmed, ...updated]; 
@@ -43,7 +43,12 @@ function Header(){
       if (userRef.current && !userRef.current.contains(e.target)) setOpenUser(false)
     }
     document.addEventListener('click', onDocClick)
-    return () => document.removeEventListener('click', onDocClick)
+    const onFocusSearch = () => triggerSearch()
+    window.addEventListener('focus-search', onFocusSearch)
+    return () => {
+      document.removeEventListener('click', onDocClick)
+      window.removeEventListener('focus-search', onFocusSearch)
+    }
   }, [])
 
   return (
@@ -121,7 +126,9 @@ function Header(){
                   onClick={()=>{navigate('/history'); setOpenUser(false)}}
                   className="px-4 py-2 hover:bg-gray-50 cursor-pointer">History Kegiatan</li>
                   <hr className="my-1 border-gray-200"/>
-                  <li className="px-4 py-2 hover:bg-gray-50 cursor-pointer">Pengaturan Akun</li>
+                  <li 
+                  onClick={()=>{navigate('/editprofile'); setOpenUser(false)}}
+                  className="px-4 py-2 hover:bg-gray-50 cursor-pointer">Pengaturan Akun</li>
                   <li className="px-4 py-2 hover:bg-gray-50 cursor-pointer">Log out</li>
                 </ul>
               </div>
