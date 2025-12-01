@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Homepage from '../../assets/image/homepage.png'
 import Bootcamp from '../../assets/svg/bootcamp.svg'
 import Seminar from '../../assets/svg/seminar.svg'
@@ -11,6 +12,8 @@ import Card from '../../component/card.jsx'
 
 function Home(){
   const items = new Array(8).fill(0)
+  const categoryRef = useRef(null)
+  const navigate = useNavigate()
   const [active, setActive] = useState(null);
   const handleClick = (value) => {
     setActive(prev => prev === value ? null : value);
@@ -67,8 +70,18 @@ function Home(){
           <h1 className="text-3xl md:text-4xl font-bold leading-tight">Temukan berbagai kegiatan bermanfaat untuk keterampilan dan wawasanmu!</h1>
           <p className="text-gray-600 text-justify">Mulai dari seminar inspiratif, webinar interaktif, bootcamp intensif, hingga berbagai kompetisi menarik—semuanya tersedia untuk membantumu berkembang lebih cepat. Jelajahi event yang sesuai minatmu dan mulai belajar hari ini.</p>
           <div className="flex gap-4">
-            <button className="px-6 py-2.5 rounded-lg bg-blue-600 text-white shadow-sm hover:bg-blue-700">Lihat</button>
-            <button className="px-6 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-800 hover:bg-gray-200">Cari</button>
+            <button
+              onClick={()=>{
+                if (categoryRef.current) {
+                  const y = categoryRef.current.getBoundingClientRect().top + window.scrollY - 120
+                  window.scrollTo({ top: y, behavior: 'smooth' })
+                }
+              }}
+              className="px-6 py-2.5 rounded-lg bg-blue-600 text-white shadow-sm hover:bg-blue-700"
+            >
+              Lihat
+            </button>
+            <button onClick={()=>window.dispatchEvent(new Event('focus-search'))} className="px-6 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-800 hover:bg-gray-200">Cari</button>
           </div>
         </div>
         <div className="w-full">
@@ -76,7 +89,7 @@ function Home(){
         </div>
       </section>
 
-      <section className="grid grid-cols-4 gap-4 text-center">
+      <section ref={categoryRef} className="grid grid-cols-4 gap-4 text-center">
       <Button 
         icon={Seminar} 
         label="Seminar" 
@@ -135,6 +148,7 @@ function Home(){
             statusTAK="TAK WAJIB"
             tags={["Teknologi", "ICT", "AI"]}
             deadline="19/10/2021"
+            onClick={()=>navigate('/kegiatan')}
           />
         ))}
       </section>
