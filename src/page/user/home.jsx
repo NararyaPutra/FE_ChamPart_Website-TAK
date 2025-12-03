@@ -133,7 +133,16 @@ function Home(){
 
       <section className="flex gap-3 overflow-x-auto">
         {["All","Most Popular","New Arrival"].map(t => (
-          <button key={t} className={`px-4 py-2 rounded-lg border shadow-sm whitespace-nowrap ${t==='All' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}>{t}</button>
+          <button
+            key={t}
+            onClick={()=>setActive(t)}
+            className={`group relative px-4 py-2 whitespace-nowrap transition-colors
+              ${active===t 
+                ? 'text-[#008DDA] border-b-2 border-[#008DDA]' 
+                : 'hover:text-gray-300 hover:border-b-2 hover:border-gray-200'}`}
+          >
+            {t}
+          </button>
         ))}
       </section>
 
