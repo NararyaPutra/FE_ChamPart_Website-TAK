@@ -73,7 +73,7 @@ function TampilanSearch(){
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold">Filter</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 pb-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-16 pb-6">
         <div>
           <h2 className="text-xl font-semibold mb-4">Kategori</h2>
           <div className="space-y-3">
@@ -134,7 +134,7 @@ function TampilanSearch(){
         </div>
       </div>
     <section className="flex gap-3 overflow-x-auto pt-6">
-        {["All","Most Popular","New Arrival","This Weekend"].map(t => (
+        {["All","Most Popular","New Arrival"].map(t => (
           <button key={t} className={`px-4 py-2 rounded-lg border shadow-sm whitespace-nowrap ${t==='All' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}>{t}</button>
         ))}
       </section>
@@ -148,7 +148,7 @@ function TampilanSearch(){
             instansi="Universitas Negeri Yogyakarta"
             tanggal="Sabtu, 31 Oktober 2021"
             statusTAK="TAK WAJIB"
-            tags={["Teknologi", "ICT", "AI"]}
+            views={100}
             deadline="19/10/2021"
             onClick={()=>navigate('/kegiatan')}
           />

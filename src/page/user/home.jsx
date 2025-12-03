@@ -77,11 +77,11 @@ function Home(){
                   window.scrollTo({ top: y, behavior: 'smooth' })
                 }
               }}
-              className="px-6 py-2.5 rounded-lg bg-blue-600 text-white shadow-sm hover:bg-blue-700"
+              className="px-6 py-2.5 rounded-lg bg-[#008DDA] text-white shadow-sm hover:bg-[#0487CF] border border-gray-100"
             >
               Lihat
             </button>
-            <button onClick={()=>window.dispatchEvent(new Event('focus-search'))} className="px-6 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-gray-800 hover:bg-gray-200">Cari</button>
+            <button onClick={()=>window.dispatchEvent(new Event('focus-search'))} className="px-6 py-2.5 rounded-lg border border-gray-100 bg-[#ACE2E1] text-white hover:bg-[#6DD5D3]">Cari</button>
           </div>
         </div>
         <div className="w-full">
@@ -132,7 +132,7 @@ function Home(){
       </section>
 
       <section className="flex gap-3 overflow-x-auto">
-        {["All","Most Popular","New Arrival","This Weekend"].map(t => (
+        {["All","Most Popular","New Arrival"].map(t => (
           <button key={t} className={`px-4 py-2 rounded-lg border shadow-sm whitespace-nowrap ${t==='All' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}>{t}</button>
         ))}
       </section>
@@ -146,7 +146,7 @@ function Home(){
             instansi="Universitas Negeri Yogyakarta"
             tanggal="Sabtu, 31 Oktober 2021"
             statusTAK="TAK WAJIB"
-            tags={["Teknologi", "ICT", "AI"]}
+            views={100}
             deadline="19/10/2021"
             onClick={()=>navigate('/kegiatan')}
           />
