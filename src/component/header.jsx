@@ -5,6 +5,7 @@ import Bookmark from '../assets/svg/bookmark.svg'
 import History from '../assets/svg/history.svg'
 import Profile from '../assets/svg/profile.svg'
 import Drop from '../assets/svg/button-dropdown.svg'
+import Search from '../assets/svg/search.svg'
 
 function Header(){
   const [query, setQuery] = useState('')
@@ -32,6 +33,7 @@ function Header(){
 
     const triggerSearch = () => {
       setOpenUser(false)
+      setOpenSuggest(true)
       if (searchRef.current) {
         searchRef.current.focus()
       }
@@ -69,7 +71,9 @@ function Header(){
               placeholder="Search events"
               className="w-full h-12 rounded-full border-2 border-gray-300 pl-10 pr-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-            <svg viewBox="0 0 24 24" className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 fill-current"><path d="M10 4a6 6 0 104.472 10.186l4.671 4.671 1.414-1.414-4.671-4.671A6 6 0 0010 4zm0 2a4 4 0 110 8 4 4 0 010-8z"/></svg>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 pl-1">
+              <img src={Search} alt="Search" className="h-5 w-5 cursor-pointer" onClick={triggerSearch} />
+            </div>
             {openSuggest && (
               <div className="absolute left-0 top-full mt-2 w-full rounded-lg border bg-white shadow-lg">
                 <div className="flex items-center justify-between px-4 pt-3 pb-2 text-sm text-gray-600 font-medium">
@@ -129,7 +133,9 @@ function Header(){
                   <li 
                   onClick={()=>{navigate('/editprofile'); setOpenUser(false)}}
                   className="px-4 py-2 hover:bg-gray-50 cursor-pointer">Pengaturan Akun</li>
-                  <li className="px-4 py-2 hover:bg-gray-50 cursor-pointer">Log out</li>
+                  <li 
+                  onClick={()=>{navigate('/login'); setOpenUser(false)}}
+                  className="px-4 py-2 hover:bg-gray-50 cursor-pointer">Log out</li>
                 </ul>
               </div>
             )}
